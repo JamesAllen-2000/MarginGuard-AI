@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     bedrock_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
     
+    # Supabase configuration
+    supabase_url: str = ""
+    supabase_key: str = ""
+    
     # AWS Credentials (optional for local/serverless env with assumed roles)
     aws_access_key_id: str | None = None
     aws_secret_access_key: str | None = None

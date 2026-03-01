@@ -3,7 +3,7 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import intelligence
+from api.routers import intelligence, raw_data
 from core.config import settings
 
 # Setup standard structured logging
@@ -55,6 +55,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 app.include_router(intelligence.router)
+app.include_router(raw_data.router)
 
 @app.get("/health", tags=["System"])
 def health_check():
