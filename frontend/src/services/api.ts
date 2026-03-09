@@ -41,7 +41,7 @@ export const ApiService = {
             const data = await response.json();
             return {
                 explanation: data.explanation || data.insights,
-                factors: data.key_factors || []
+                factors: data.riskFactors || data.key_factors || []
             };
         } catch (e) {
             console.error("Explanation fetch error:", e);
@@ -60,9 +60,11 @@ export const ApiService = {
      */
     async simulatePrice(skuData: any, newPrice: number): Promise<any> {
         try {
+            // Backend expects: { skuId, newPrice, skuData } (camelCase)
             const payload = {
-                sku_data: skuData,
-                new_price: newPrice
+                skuId: skuData.id,
+                newPrice: newPrice,
+                skuData: skuData
             };
 
             const response = await fetch(`${API_BASE}/simulate`, {
@@ -71,16 +73,27 @@ export const ApiService = {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error('Simulation failed');
-            return await response.json();
+            if (!response.ok) {
+                const errBody = await response.text();
+                console.error('Simulation API error:', errBody);
+                throw new Error(`Simulation failed: ${response.status}`);
+            }
+
+            const data = await response.json();
+            // Backend returns: { before: {...}, after: {...} }
+            // Normalise to shape that SkuDetailDrawer expects
+            return {
+                projected_margin: data.after?.margin ?? data.projected_margin,
+                projected_risk_score: data.after?.riskScore ?? data.projected_risk_score,
+                volume_impact_percent: data.after?.estimatedVolumeChange ?? data.volume_impact_percent
+            };
         } catch (e) {
             console.error("Simulation error:", e);
-            // Mock simulation fallback
+            // Local fallback using simple price-elasticity model
             const priceDiff = newPrice - skuData.currentPrice;
             const pricePercentChange = priceDiff / skuData.currentPrice;
             const elasticity = -0.8;
             const volumeChange = pricePercentChange * elasticity;
-
             const newMargin = ((newPrice - skuData.cogs - skuData.fbaFees - skuData.referralFees) / newPrice) * 100;
 
             return {

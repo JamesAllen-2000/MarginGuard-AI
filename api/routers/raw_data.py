@@ -2,13 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Dict, Any
 from models.schemas import RawSKUData, AIExplanationResponse
 from core.risk_engine import calculate_risk
-from services.bedrock_client import BedrockClient
+from services.ai.factory import AIClientFactory
+from services.ai.base_client import BaseAIClient
 from services.supabase_client import SupabaseClient
 
 router = APIRouter(prefix="/api/v1/raw-data", tags=["Raw Data Ingestion"])
 
-def get_bedrock():
-    return BedrockClient()
+def get_ai_service() -> BaseAIClient:
+    return AIClientFactory.get_ai_client()
 
 def get_supabase():
     return SupabaseClient()
@@ -35,7 +36,7 @@ async def get_raw_data_template():
 @router.post("/analyze", response_model=AIExplanationResponse)
 async def analyze_raw_data(
     request: Request,
-    bedrock: BedrockClient = Depends(get_bedrock),
+    ai_service: BaseAIClient = Depends(get_ai_service),
     supabase: SupabaseClient = Depends(get_supabase)
 ):
     """
@@ -67,7 +68,7 @@ async def analyze_raw_data(
     )
 
     # 4. Generate AI Explanation
-    explanation = bedrock.generate_explanation(
+    explanation = ai_service.generate_explanation(
         sku_name=sku_base.name,
         margin=sku_base.currentMargin,
         score=score,
