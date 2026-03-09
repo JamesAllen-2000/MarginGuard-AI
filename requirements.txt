@@ -9,3 +9,8 @@ pydantic-settings>=2.2.1
 gunicorn>=21.2.0
 supabase>=2.3.0
 httpx>=0.27.0
+
+# Frontend Requirements (System)
+# Node.js >= 18.0.0
+# npm >= 9.0.0
+# See frontend/package.json for library dependencies

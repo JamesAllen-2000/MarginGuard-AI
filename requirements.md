@@ -132,28 +132,24 @@ MarginGuard AI is a real-time profit risk intelligence platform for Amazon FBA s
 6. THE API_Gateway SHALL implement CORS headers to allow requests from the Amplify-hosted frontend
 7. THE System SHALL use AWS IAM roles for secure access between services
 
-### Requirement 9: Frontend Deployment
+### Requirement 9: Frontend Technical Stack
 
-**User Story:** As a developer, I want the React frontend deployed on AWS Amplify, so that the demo is accessible via a public URL.
+**User Story:** As a developer, I want to use a modern React stack, so that the application is performant and maintainable.
 
 #### Acceptance Criteria
 
-1. THE System SHALL host the React application on AWS Amplify
-2. WHEN the application is deployed, THE Amplify SHALL provide a public HTTPS URL
-3. THE System SHALL build and deploy the frontend within 5 minutes of code changes
-4. THE Frontend SHALL integrate with Cognito for authentication
-5. THE Frontend SHALL make API calls to the API_Gateway endpoints
-6. THE System SHALL serve static assets (CSS, JavaScript, images) with CDN caching
+1. THE System SHALL be built using React 19 and Vite
+2. THE UI SHALL implement a Glassmorphism design system using Vanilla CSS
+3. THE System SHALL use TypeScript for type safety across all components
+4. THE Frontend SHALL be hosted on AWS Amplify (Requirement 9.1)
+5. THE System SHALL interact with the Backend API via JSON over HTTP
 
-### Requirement 10: Demo Flow Optimization
+### Requirement 10: Demo Flow & UX
 
 **User Story:** As a hackathon presenter, I want a streamlined demo flow, so that I can showcase the platform's value in under 5 minutes.
 
 #### Acceptance Criteria
 
 1. WHEN a demo user logs in, THE System SHALL display the Profit_Health_Radar as the landing page
-2. THE System SHALL pre-select a high-risk SKU to demonstrate the AI explanation feature
-3. THE System SHALL provide a "Demo Mode" that highlights key features in sequence
-4. WHEN Demo Mode is activated, THE System SHALL display tooltips guiding the user through the workflow
-5. THE System SHALL complete the full demo flow (login → radar view → SKU detail → AI explanation → what-if simulation) within 5 minutes
-6. THE System SHALL include sample data that tells a compelling story (e.g., a SKU saved by price adjustment)
+2. THE System SHALL include a "Start Demo Tour" button that provides a 3-step guided walkthrough
+3. THE System SHALL follow a 1920x1080 optimized layout for premium presentation
