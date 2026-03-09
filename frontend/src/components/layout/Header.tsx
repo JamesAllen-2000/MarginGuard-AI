@@ -35,7 +35,7 @@ export const Header: FC = () => {
                         Demo Mode Active
                     </div>
                     <button className="btn btn-glass" style={{ borderRadius: '20px', padding: '0.5rem 1.25rem' }}>
-                        Alex Seller
+                        Dominic Evanca
                     </button>
                 </div>
             </GlassPanel>
