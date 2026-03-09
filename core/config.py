@@ -12,7 +12,12 @@ class Settings(BaseSettings):
     
     # AWS & Bedrock
     aws_region: str = "us-east-1"
-    bedrock_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
+    bedrock_model_id: str = "deepseek.deepseek-v3-0324"  # Override with BEDROCK_MODEL_ID in .env if needed
+    aws_bearer_token_bedrock: str | None = None
+    
+    # Interchangeable AI
+    active_ai_provider: str = "bedrock" # options: "bedrock", "openai", "mock"
+    openai_api_key: str | None = None
     
     # Supabase configuration
     supabase_url: str = ""

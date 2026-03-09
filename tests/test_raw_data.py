@@ -12,7 +12,7 @@ def test_get_raw_data_template():
     assert "message" in data
 
 @patch("services.supabase_client.SupabaseClient.save_raw_json")
-@patch("services.bedrock_client.BedrockClient.generate_explanation")
+@patch("services.ai.bedrock_client.BedrockClient.generate_explanation")
 def test_analyze_raw_data(mock_generate_explanation, mock_save_raw_json):
     # Setup mocks
     mock_generate_explanation.return_value = "Mocked explanation"

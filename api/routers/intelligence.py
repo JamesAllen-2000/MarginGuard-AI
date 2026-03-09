@@ -2,12 +2,13 @@ from fastapi import APIRouter, HTTPException, Depends
 from models.schemas import SKUBase, SKURiskResponse, AIExplanationResponse, SimulateRequest, SimulationResult
 from core.risk_engine import calculate_risk, get_risk_level
 from core.simulator import simulate_price_change
-from services.bedrock_client import BedrockClient
+from services.ai.factory import AIClientFactory
+from services.ai.base_client import BaseAIClient
 
 router = APIRouter(prefix="/api/v1", tags=["Intelligence"])
 
-def get_bedrock():
-    return BedrockClient()
+def get_ai_service() -> BaseAIClient:
+    return AIClientFactory.get_ai_client()
 
 @router.post("/risk-score", response_model=SKURiskResponse)
 async def get_risk_score(sku: SKUBase):
@@ -23,11 +24,11 @@ async def get_risk_score(sku: SKUBase):
     )
 
 @router.post("/explanation", response_model=AIExplanationResponse)
-async def get_explanation(sku: SKUBase, bedrock: BedrockClient = Depends(get_bedrock)):
+async def get_explanation(sku: SKUBase, ai_service: BaseAIClient = Depends(get_ai_service)):
     """Generate an AI explanation of risk factors for a given SKU."""
     score, factors = calculate_risk(sku)
     
-    explanation = bedrock.generate_explanation(
+    explanation = ai_service.generate_explanation(
         sku_name=sku.name,
         margin=sku.currentMargin,
         score=score,
