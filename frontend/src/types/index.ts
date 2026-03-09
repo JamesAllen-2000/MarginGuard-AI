@@ -40,5 +40,4 @@ export interface SimulationResult {
         projectedRevenue30d: number;
         estimatedVolumeChange: number;  // Percentage change
     };
-    recommendation: string;       // AI-generated recommendation
 }

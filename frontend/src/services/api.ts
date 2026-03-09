@@ -1,24 +1,28 @@
 import { SKU } from '../types';
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export const ApiService = {
     /**
-     * Fetch all SKUs from the mock database
+     * Fetch all SKUs from the backend and enrich with risk scores
      */
     async getSkus(): Promise<SKU[]> {
         try {
-            // In a real app we would call an endpoint here.
-            // For this MVP (since the FASTAPI backend serves specific mock files via raw_data or handles risk-score generation),
-            // we'll fetch from the intelligence/raw data endpoints if available, or simulate if not fully wired.
+            const response = await fetch(`${API_BASE}/skus/`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data: any[] = await response.json();
 
-            // Attempt to hit the backend raw data if it exists:
-            const response = await fetch(`${API_BASE}/raw-data/skus.json`);
-            if (response.ok) {
-                const data = await response.json();
-                return data.skus || data;
-            }
-            throw new Error("Unable to fetch real SKUs");
+            // The backend returns SKUBase (no riskScore/riskLevel).
+            // Compute them client-side by calling /risk-score for each,
+            // or calculate locally to avoid N+1 requests.
+            return data.map(sku => {
+                const riskResult = computeLocalRisk(sku);
+                return {
+                    ...sku,
+                    riskScore: riskResult.score,
+                    riskLevel: riskResult.level,
+                } as SKU;
+            });
         } catch (e) {
             console.warn("Backend SKU fetch failed, falling back to mock", e);
             return getMockSkus();
@@ -144,4 +148,46 @@ function getMockSkus(): SKU[] {
             salesVelocity: 6.6, acos: 12.5, lastUpdated: new Date().toISOString()
         }
     ];
+}
+
+/**
+ * Client-side risk calculation mirroring the backend's risk_engine.py weights.
+ * This avoids N+1 API calls when enriching the SKU list.
+ */
+function computeLocalRisk(sku: any): { score: number; level: 'low' | 'medium' | 'high' } {
+    // 1. Margin Trend (40%)
+    let marginScore = 30; // stable
+    if (sku.marginTrend === 'up') marginScore = 0;
+    else if (sku.marginTrend === 'down') marginScore = 100;
+
+    // 2. Ad Efficiency (30%) — ACOS
+    let adScore = 0;
+    if (sku.acos > 50) adScore = 100;
+    else if (sku.acos < 15) adScore = 0;
+    else adScore = ((sku.acos - 15) / (50 - 15)) * 100;
+
+    // 3. Fee Impact (20%)
+    const feePct = sku.currentPrice > 0
+        ? ((sku.fbaFees + sku.referralFees) / sku.currentPrice) * 100
+        : 100;
+    let feeScore = 0;
+    if (feePct > 45) feeScore = 100;
+    else if (feePct < 25) feeScore = 0;
+    else feeScore = ((feePct - 25) / (45 - 25)) * 100;
+
+    // 4. Return Rate (10%)
+    const returnRate = sku.unitsSold30d > 0
+        ? (sku.returns30d / sku.unitsSold30d) * 100
+        : 0;
+    let retScore = 0;
+    if (returnRate > 10) retScore = 100;
+    else if (returnRate < 2) retScore = 0;
+    else retScore = ((returnRate - 2) / (10 - 2)) * 100;
+
+    const score = Math.max(0, Math.min(100,
+        marginScore * 0.4 + adScore * 0.3 + feeScore * 0.2 + retScore * 0.1
+    ));
+
+    const level: 'low' | 'medium' | 'high' = score <= 39 ? 'low' : score <= 69 ? 'medium' : 'high';
+    return { score: Math.round(score * 10) / 10, level };
 }

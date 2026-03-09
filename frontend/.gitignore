@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+bedrock-long-term-api-key.csv
+.env
+.env.local
