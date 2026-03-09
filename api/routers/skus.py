@@ -51,7 +51,7 @@ def load_skus() -> List[SKUBase]:
 
 @router.get("/", response_model=List[SKUBase])
 async def get_skus(
-    riskLevel: Optional[str] = Query(None, regex="^(low|medium|high)$"),
+    riskLevel: Optional[str] = Query(None, pattern="^(low|medium|high)$"),
     search: Optional[str] = None
 ):
     """

@@ -113,7 +113,7 @@ class RawSKUData(BaseModel):
         if self.marginTrend and self.marginTrend.lower() in ("up", "down", "stable"):
             trend = self.marginTrend.lower()
             
-        update_time = self.lastUpdated or datetime.datetime.utcnow().isoformat()
+        update_time = self.lastUpdated or datetime.datetime.now(datetime.timezone.utc).isoformat()
         
         return SKUBase(
             id=self.id,
